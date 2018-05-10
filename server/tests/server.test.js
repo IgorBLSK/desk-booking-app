@@ -59,14 +59,14 @@ describe('POST /desks', () => {
     });
 });
 
-// describe('GET /desks', () => {
-//     it('should get all desks', (done) => {
-//         request(app)
-//         .get('/desks')
-//         .expect(200)
-//         .expect((res) => {
-//             expect(res.body.desks.length).toBe(2)
-//         })
-//         .end(done)
-//     });
-// });
+describe('GET /desks', () => {
+    it('should get all desks', (done) => {
+        request(app)
+        .get('/desks')
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.desks.length).toBe(2)
+        })
+        .end(done)
+    });
+});
