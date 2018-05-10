@@ -7,6 +7,8 @@ var {Desk} = require('./models/desk');
 var {User} = require('./models/user');
 
 var app = express();
+// setup for Heroku
+const port = process.env.PORT || 3000;
 
 // body parser converts json to an object send to req
 app.use(bodyParser.json());
@@ -50,8 +52,8 @@ app.get('/desks/:id', (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log('Started on port 3000');
+app.listen(port, () => {
+    console.log(`Started up at port ${port}`);
 });
 
 module.exports = {app};
