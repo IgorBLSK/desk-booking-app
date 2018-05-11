@@ -74,7 +74,7 @@ app.delete('/desks/:id', (req,res) => {
         if(!desk) {
             return res.status(404).send();
         }
-    res.send(desk);
+    res.send({desk});
     }).catch((e) => {
         res.status(400).send();
     });

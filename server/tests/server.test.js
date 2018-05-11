@@ -101,3 +101,42 @@ describe('GET /desks/:id', () => {
         .end(done);
     });
 });
+// nefunguje, neviem preco
+describe('DELETE /desks/:id', () => {
+    it('should remove a desk', (done) => {
+        var hexId = desks[1]._id.toHexString();
+
+        request(app)
+        .delete(`/desks/${hexId}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.desk._id).toBe(hexId);
+        })
+        .end((err, res) => {
+            if (err) {
+                return done(err);
+            }
+
+            Desk.findById(hexId).then((desk) => {
+                expect(desk).toNotExist();
+                done();
+            }).catch((e) => done(e));
+        });
+    });
+
+    it('should return 404 if desk not found', (done) => {
+        var hexId = new ObjectID().toHexString();
+
+        request(app)
+        .delete(`/desks/${hexId}`)
+        .expect(404)
+        .end(done);
+    });
+
+    it('should return 404 if object id is invalid', (done) => {
+        request(app)
+        .delete('/desks/123abc')
+        .expect(404)
+        .end(done);
+    });
+});
