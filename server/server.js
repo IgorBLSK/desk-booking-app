@@ -35,6 +35,17 @@ app.get('/desks', (req, res) => {
     })
 });
 
+// get all free desks
+app.get('/desks/available', (req, res) => {
+    Desk.find({
+        available: true
+    }).then((desks) => {
+        res.send({desks})
+    }, (e) => {
+        res.status(400).send(e);
+    })
+});
+
 // find desk by ID
 app.get('/desks/:id', (req, res) => {
     var id = req.params.id;
@@ -48,6 +59,23 @@ app.get('/desks/:id', (req, res) => {
         }    
     res.send({desk});
     }).catch((e)=> {
+        res.status(400).send();
+    });
+});
+
+// delete desk by ID
+app.delete('/desks/:id', (req,res) => {
+    var id = req.params.id;
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+    Desk.findByIdAndRemove(id).then((desk) => {
+        if(!desk) {
+            return res.status(404).send();
+        }
+    res.send(desk);
+    }).catch((e) => {
         res.status(400).send();
     });
 });
