@@ -1,3 +1,5 @@
+require('./config/config');
+
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,7 +11,7 @@ var {User} = require('./models/user');
 
 var app = express();
 // setup for Heroku
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 // body parser converts json to an object send to req
 app.use(bodyParser.json());
