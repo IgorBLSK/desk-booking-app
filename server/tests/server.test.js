@@ -10,7 +10,9 @@ const desks = [{
     deskNumber: "first test desk"
 }, {
     _id: new ObjectID(),
-    deskNumber: "second test desk"
+    deskNumber: "second test desk",
+    available: false,
+    bookedAt: 333
 }];
 
 beforeEach((done) => {
@@ -140,3 +142,43 @@ describe('DELETE /desks/:id', () => {
         .end(done);
     });
 });
+// nefunguje, neviem preco
+describe('PATCH /desks/:id', () => {
+    it('should update the desk', (done) => {
+        var hexId = desks[1]._id.toHexString();
+        var text = 'This should be the new text';
+
+        request(app)
+        .patch(`/desks/${hexId}`)
+        .send({
+            avaialable: false,
+            text
+        })
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.desk.text).toBe(text);
+            expect(res.body.desk.available).toBe(false);
+            expect(res.body.desk.completedAt).toBeA('number');
+        })
+        .end(done)
+    });
+
+    it('should clear bookedAt when desk is available', (done) => {
+        var hexId = desks[0]._id.toHexString();
+        var text = 'This should be the new text';
+
+        request(app)
+        .patch(`/desks/${hexId}`)
+        .send({
+            avaialable: true,
+            text
+        })
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.desk.text).toBe(text);
+            expect(res.body.desk.available).toBe(true);
+            expect(res.body.desk.completedAt).toNotExist();
+        })
+        .end(done)
+    });
+})
