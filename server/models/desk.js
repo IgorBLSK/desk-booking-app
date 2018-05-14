@@ -14,6 +14,9 @@ var Desk = mongoose.model('Desk', {
     bookedAt: {
         type: Number,
         default: null
+    },
+    text: {
+        type: String,
     }
 });
 

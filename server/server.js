@@ -1,5 +1,6 @@
-var express = require('express');
-var bodyParser = require('body-parser');
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
@@ -78,6 +79,32 @@ app.delete('/desks/:id', (req,res) => {
     }).catch((e) => {
         res.status(400).send();
     });
+});
+
+app.patch('/desks/:id', (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['deskNumber', 'available', 'text']);
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    if(_.isBoolean(body.available) && body.available) {
+        body.bookedAt = null;
+    } else {
+        body.bookedAt = new Date().getTime();
+        body.available = false;
+    }
+
+    Desk.findByIdAndUpdate(id, {$set: body}, {new: true}).then((desk) => {
+        if(!desk) {
+            return res.status(404).send();
+        }
+
+        res.send({desk});
+    }).catch((e) => {
+        res.status(400).send();
+    })
 });
 
 app.listen(port, () => {
