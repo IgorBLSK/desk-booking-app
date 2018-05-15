@@ -19,7 +19,8 @@ app.use(bodyParser.json());
 // create new desk in db
 app.post('/desks', (req, res) => {
     var desk = new Desk({
-        deskNumber: req.body.deskNumber
+        deskNumber: req.body.deskNumber,
+        text: req.body.text
     });
 
     desk.save().then((doc) => {
@@ -83,6 +84,7 @@ app.delete('/desks/:id', (req,res) => {
     });
 });
 
+// update an existing desk
 app.patch('/desks/:id', (req, res) => {
     var id = req.params.id;
     var body = _.pick(req.body, ['deskNumber', 'available', 'text']);
@@ -94,6 +96,8 @@ app.patch('/desks/:id', (req, res) => {
     if(_.isBoolean(body.available) && body.available) {
         body.bookedAt = null;
     } else {
+        // var time = new Date().getTime();
+        // var date = new Date(time);
         body.bookedAt = new Date().getTime();
         body.available = false;
     }
@@ -106,6 +110,20 @@ app.patch('/desks/:id', (req, res) => {
         res.send({desk});
     }).catch((e) => {
         res.status(400).send();
+    })
+});
+
+// POST /users
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['fullName', 'email', 'password'])
+    var user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
     })
 });
 

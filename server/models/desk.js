@@ -5,7 +5,9 @@ var Desk = mongoose.model('Desk', {
         type: String,
         required: true,
         minlength: 1,
-        trim: true
+        maxlength: 3,
+        trim: true,
+        unique: true
     },
     available: {
         type: Boolean,
