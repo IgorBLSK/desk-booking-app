@@ -4,22 +4,11 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Desk} = require('./../models/desk');
+const {User} = require('./../models/user')
+const {desks, populateDesks, users, populateUsers} = require('./seed/seed');
 
-const desks = [{
-    _id: new ObjectID(),
-    deskNumber: "first test desk"
-}, {
-    _id: new ObjectID(),
-    deskNumber: "second test desk",
-    available: false,
-    bookedAt: 333
-}];
-
-beforeEach((done) => {
-    Desk.remove({}).then(() => {
-        return Desk.insertMany(desks)
-    }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateDesks);
 
 describe('POST /desks', () => {
     it('should create a new desk', (done) => {
@@ -151,16 +140,16 @@ describe('PATCH /desks/:id', () => {
         request(app)
         .patch(`/desks/${hexId}`)
         .send({
-            avaialable: false,
+            available: false,
             text
         })
         .expect(200)
         .expect((res) => {
             expect(res.body.desk.text).toBe(text);
             expect(res.body.desk.available).toBe(false);
-            expect(res.body.desk.completedAt).toBeA('number');
+            expect(res.body.desk.bookedAt).toBeA('number');
         })
-        .end(done)
+        .end(done);
     });
 
     it('should clear bookedAt when desk is available', (done) => {
@@ -177,8 +166,85 @@ describe('PATCH /desks/:id', () => {
         .expect((res) => {
             expect(res.body.desk.text).toBe(text);
             expect(res.body.desk.available).toBe(true);
-            expect(res.body.desk.completedAt).toNotExist();
+            expect(res.body.desk.bookedAt).toNotExist();
         })
         .end(done)
     });
-})
+});
+
+describe('GET /users/me', () => {
+    it('should return user if authenticatated', (done) => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(users[0]._id.toHexString());
+                expect(res.body.email).toBe(users[0].email)
+            })
+            .end(done);
+    });
+
+    it('should return 401 when not authenticated', (done) => {
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done);
+    });
+});
+
+describe('POST /users', () => {
+    it('should create a user', (done) => {
+        var fullName = 'John Doe';
+        var email = 'example@example.com';
+        var password = '123mnb!';
+
+        request(app)
+            .post('/users')
+            .send({fullName, email, password})
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toExist();
+                expect(res.body._id).toExist();
+                expect(res.body.fullName).toBe(fullName);
+                expect(res.body.email).toBe(email);
+            })
+            .end((err) => {
+                if (err) {
+                    return done(err);
+                }
+            
+            User.findOne({email}).then((user) => {
+                expect(user).toExist();
+                expect(user.password).toNotBe(password);
+                done();
+            });
+        });
+    });
+    
+    it('should return validation errors if request invalid', (done) => {
+        request(app)
+        .post('/users')
+        .send({
+            email: 'and',
+            password: '123'
+        })
+        .expect(400)
+        .end(done);
+    });
+
+    it('should not create a user if email is in use', (done) => {
+        request(app)
+        .post('/users')
+        .send({
+
+            email: users[0].email,
+            password: 'Password123!'
+        })
+        .expect(400)
+        .end(done);
+    });
+});
